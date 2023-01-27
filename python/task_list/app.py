@@ -6,6 +6,12 @@ from task_list.task import Task
 
 class TaskList:
     QUIT = "quit"
+    SHOW = "show"
+    ADD = "add"
+    CHECK = "check"
+    UNCHECK = "uncheck"
+    HELP = "help"
+    PROJECT = "project"
 
     def __init__(self, console: Console) -> None:
         self.console = console
@@ -22,18 +28,15 @@ class TaskList:
     def execute(self, command_line: str) -> None:
         command_rest = command_line.split(" ", 1)
         command = command_rest[0]
-        if command == "show":
-            self.show()
-        elif command == "add":
-            self.add(command_rest[1])
-        elif command == "check":
-            self.check(command_rest[1])
-        elif command == "uncheck":
-            self.uncheck(command_rest[1])
-        elif command == "help":
-            self.help()
-        else:
-            self.error(command)
+        switcher={
+                self.SHOW: self.show(),
+                self.ADD: self.add(command_rest[1]),
+                self.CHECK: self.check(command_rest[1]),
+                self.UNCHECK: self.uncheck(command_rest[1]),
+                self.HELP: self.help(),
+                }
+        switcher.get(command, lambda: self.error(command))
+
 
     def show(self) -> None:
         for project, tasks in self.tasks.items():
@@ -45,11 +48,10 @@ class TaskList:
     def add(self, command_line: str) -> None:
         sub_command_rest = command_line.split(" ", 1)
         sub_command = sub_command_rest[0]
-        if sub_command == "project":
+        if sub_command == self.PROJECT:
             self.add_project(sub_command_rest[1])
-        elif sub_command == "task":
-            project_task = sub_command_rest[1].split(" ", 1)
-            self.add_task(project_task[0], project_task[1])
+        project_task = sub_command_rest[1].split(" ", 1)
+        self.add_task(project_task[0], project_task[1])
 
     def add_project(self, name: str) -> None:
         self.tasks[name] = []
@@ -70,7 +72,7 @@ class TaskList:
 
     def set_done(self, id_string: str, done: bool) -> None:
         id_ = int(id_string)
-        for project, tasks in self.tasks.items():
+        for tasks in self.tasks.items():
             for task in tasks:
                 if task.id == id_:
                     task.set_done(done)
